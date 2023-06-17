@@ -60,5 +60,14 @@ CREATE TABLE overdueFees
  isbnNo INT PRIMARY KEY,
  days_overdue INT,
  amt_owed INT,
- patron_id INT -- FK with library_card_number
+ patron_id INT UNIQUE -- FK with library_card_number
+);
+
+CREATE TABLE loans
+(
+  loan_id INT PRIMARY KEY,
+  patron_id INT UNIQUE, -- FK with patron table
+  book_id INT, -- FK with isbnNo in book table
+  loan_date DATE,
+  due_date DATE
 );
