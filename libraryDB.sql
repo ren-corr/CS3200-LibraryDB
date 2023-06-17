@@ -1,6 +1,6 @@
 -- create the database
 DROP DATABASE IF EXISTS libraryDB;
-CREATE DATABASE libraryDb;
+CREATE DATABASE libraryDB;
 
 -- select the database
 USE libraryDB;
@@ -8,66 +8,83 @@ USE libraryDB;
 -- create the tables
 CREATE TABLE book
 (
-  isbnNo        INT            PRIMARY KEY,
-  title   VARCHAR(50)    UNIQUE,
-  author   VARCHAR(50)    UNIQUE,
-  genre   VARCHAR(50)    UNIQUE,
-  book_description   VARCHAR(50)    UNIQUE,
-  num_compies TINYINT -- tinyint is like boolean 
+  book_id INT PRIMARY KEY AUTO_INCREMENT,
+  isbnNo INT UNIQUE,
+  title VARCHAR(50) UNIQUE,
+  author VARCHAR(50),
+  genre VARCHAR(50),
+  book_description VARCHAR(50),
+  num_copies TINYINT,
+  available TINYINT
 );
 
 CREATE TABLE library
 (
   library_id INT PRIMARY KEY,
-  address               VARCHAR(50),
-  city                   VARCHAR(50)    NOT NULL,
-  state                  CHAR(2)        NOT NULL,
-  zip_code               VARCHAR(20)    NOT NULL,
-  phone_number                  VARCHAR(50)
-  -- add a librarian FK and have a librarian table?
+  address VARCHAR(50),
+  city VARCHAR(50) NOT NULL,
+  state CHAR(2) NOT NULL,
+  zip_code VARCHAR(20) NOT NULL,
+  phone_number VARCHAR(50)
 );
 
 CREATE TABLE patron
 (
-  library_car_number INT PRIMARY KEY,
-  pin_number              INT,
-  first_name VARCHAR(50) UNIQUE,
-  last_name VARCHAR(50) UNIQUE,
-  address               VARCHAR(50),
-  city                   VARCHAR(50)    NOT NULL,
-  state                  CHAR(2)        NOT NULL,
-  zip_code               VARCHAR(20)    NOT NULL,
-  phone_number                  VARCHAR(50)
+  library_card_number INT PRIMARY KEY,
+  pin_number INT,
+  first_name VARCHAR(50),
+  last_name VARCHAR(50),
+  address VARCHAR(50),
+  city VARCHAR(50) NOT NULL,
+  state CHAR(2) NOT NULL,
+  zip_code VARCHAR(20) NOT NULL,
+  phone_number VARCHAR(50)
 );
 
 CREATE TABLE librarian
 (
   librarian_id INT PRIMARY KEY,
-  branch INT UNIQUE, -- FK with library_id in library table
+  branch INT UNIQUE,
   username VARCHAR(50),
-  password VARCHAR(50)
+  password VARCHAR(50),
+  FOREIGN KEY (branch) REFERENCES library(library_id)
 );
 
 CREATE TABLE hold
 (
-  isbnNo INT PRIMARY KEY,
+  hold_id INT PRIMARY KEY,
+  isbnNo INT,
   wait_time INT,
-  patron_id INT -- FK with library_card_number in patron table
+  patron_id INT,
+  FOREIGN KEY (isbnNo) REFERENCES book(isbnNo),
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
 );
 
 CREATE TABLE overdueFees
 (
- isbnNo INT PRIMARY KEY,
- days_overdue INT,
- amt_owed INT,
- patron_id INT UNIQUE -- FK with library_card_number
+  isbnNo INT,
+  days_overdue INT,
+  amt_owed INT,
+  patron_id INT,
+  PRIMARY KEY (isbnNo, patron_id),
+  FOREIGN KEY (isbnNo) REFERENCES book(isbnNo),
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
 );
 
 CREATE TABLE loans
 (
   loan_id INT PRIMARY KEY,
-  patron_id INT UNIQUE, -- FK with patron table
-  book_id INT, -- FK with isbnNo in book table
+  patron_id INT,
+  book_id INT,
   loan_date DATE,
-  due_date DATE
+  due_date DATE,
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number),
+  FOREIGN KEY (book_id) REFERENCES book(isbnNo)
+);
+
+CREATE TABLE numCopies
+(
+  copy_id INT PRIMARY KEY AUTO_INCREMENT,
+  isbnNo INT NOT NULL,
+  FOREIGN KEY (isbnNo) REFERENCES book(isbnNo)
 );
