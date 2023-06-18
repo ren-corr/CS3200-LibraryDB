@@ -9,12 +9,10 @@ USE libraryDB;
 CREATE TABLE book
 (
   book_id INT PRIMARY KEY AUTO_INCREMENT,
-  isbnNo INT UNIQUE,
   title VARCHAR(50) UNIQUE,
   author VARCHAR(50),
   genre VARCHAR(50),
   book_description VARCHAR(50),
-  -- num_copies TINYINT,
   total_copies INT,
   available TINYINT
 );
@@ -59,12 +57,12 @@ CREATE TABLE hold
 
 CREATE TABLE overdueFees
 (
-  isbnNo INT,
+  book_id INT,
   days_overdue INT,
   amt_owed INT,
   patron_id INT,
-  PRIMARY KEY (isbnNo, patron_id),
-  FOREIGN KEY (isbnNo) REFERENCES book(isbnNo),
+  PRIMARY KEY (book_id, patron_id),
+  FOREIGN KEY (book_id) REFERENCES book(book_id),
   FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
 );
 
@@ -76,14 +74,14 @@ CREATE TABLE loans
   loan_date DATE,
   due_date DATE,
   FOREIGN KEY (patron_id) REFERENCES patron(library_card_number),
-  FOREIGN KEY (book_id) REFERENCES book(isbnNo)
+  FOREIGN KEY (book_id) REFERENCES book(book_id)
 );
 
 CREATE TABLE numCopies
 (
   copy_id INT PRIMARY KEY AUTO_INCREMENT,
-  isbnNo INT NOT NULL,
-  FOREIGN KEY (isbnNo) REFERENCES book(isbnNo)
+  book_id INT NOT NULL,
+  FOREIGN KEY (book_id) REFERENCES book(book_id)
 );
 
 CREATE TABLE author
