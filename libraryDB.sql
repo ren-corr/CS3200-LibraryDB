@@ -101,3 +101,35 @@ CREATE TABLE book_author
   FOREIGN KEY (book_id) REFERENCES book(book_id),
   FOREIGN KEY (author_id) REFERENCES author(author_id) 
 );
+
+-- place a book on hold
+DELIMITER //
+CREATE PROCEDURE createHold(
+  IN p_book_id INT,
+  IN p_patron_id INT,
+  IN p_wait_time INT
+)
+BEGIN
+  -- check if the book exists
+  IF NOT EXISTS (SELECT 1 FROM book WHERE book_id = p_book_id) THEN
+    SIGNAL SQLSTATE '45000' -- reccomended for custom error messages 
+      SET MESSAGE_TEXT = 'Book does not exist';
+  END IF;
+  
+  -- check if the patron exists
+  IF NOT EXISTS (SELECT 1 FROM patron WHERE library_card_number = p_patron_id) THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'Patron does not exist';
+  END IF;
+
+  -- insert the hold
+  INSERT INTO hold (book_id, wait_time, patron_id)
+  VALUES (p_book_id, p_wait_time, p_patron_id);
+
+ -- hold sucsessfully placed 
+  SELECT 'Hold created successfully' AS Message;
+END //
+DELIMITER ;
+
+-- test call (change later)
+CALL createHold(123, 1, 3);
