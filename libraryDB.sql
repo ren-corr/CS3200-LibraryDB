@@ -133,3 +133,137 @@ DELIMITER ;
 
 -- test call (change later)
 CALL createHold(123, 1, 3);
+
+
+-- check out book
+DROP PROCEDURE IF EXISTS bookCheckout;
+DELIMITER //
+CREATE PROCEDURE bookCheckout(IN p_book_id INT, IN p_patron_id INT)
+BEGIN
+    DECLARE availability_status TINYINT;
+    DECLARE v_loan_id INT;
+
+    -- check if the book exists and is available
+    SELECT available INTO availability_status
+    FROM book
+    WHERE book_id = p_book_id;
+    
+    IF availability_status = 1 THEN
+        -- set the book as unavailable
+        UPDATE book
+        SET available = 0
+        WHERE book_id = p_book_id;
+
+        -- generate a new loan_id
+        SELECT IFNULL(MAX(loan_id), 0) + 1 INTO v_loan_id
+        FROM loans;
+
+        -- insert a new loan record
+        INSERT INTO loans (loan_id, patron_id, book_id, loan_date, due_date)
+        VALUES (v_loan_id, p_patron_id, p_book_id, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 WEEK));
+
+        SELECT 'Title borrowed successfully!' AS Message;
+    ELSE
+        SELECT 'Title not available.' AS Message;
+    END IF;
+END //
+DELIMITER ;
+
+
+-- return book
+DROP PROCEDURE IF EXISTS returnBook;
+DELIMITER //
+CREATE PROCEDURE returnBook(
+  IN p_book_id INT,
+  IN p_patron_id INT
+)
+BEGIN
+	DECLARE p_days_overdue INT;
+    
+	IF EXISTS (SELECT * FROM loans WHERE book_id = p_book_id) THEN
+	  -- calculate days overdue
+	  SELECT DATEDIFF(CURRENT_DATE(), due_date) INTO p_days_overdue
+	  FROM loans
+	  WHERE book_id = p_book_id AND patron_id = p_patron_id;
+      
+      -- handle early returns
+      IF p_days_overdue <= 0 THEN
+		SET p_days_overdue = 0;
+	  END IF;
+	  
+	  -- update overdueFees table
+	  UPDATE overdueFees
+	  SET days_overdue = p_days_overdue, amt_owed = p_days_overdue * .15
+	  WHERE book_id = p_book_id AND patron_id = p_patron_id;
+	  
+	  -- update book availability
+	  UPDATE book
+	  SET available = 1
+	  WHERE book_id = p_book_id;
+	  
+	  -- delete book from loans
+	  DELETE FROM loans
+	  WHERE book_id = p_book_id AND patron_id = p_patron_id;
+	  SELECT 'Book returned successfully.' AS MESSAGE;
+	  -- 
+	  IF p_days_overdue > 0 THEN
+		SELECT amt_owed
+		FROM overdueFees;
+		END IF;
+	ELSE
+		SELECT 'Book not found in loans' AS MESSAGE;
+    END IF;
+END //
+DELIMITER ;
+
+
+-- show all books being borrowed by the user
+DROP PROCEDURE IF EXISTS booksBorrowed;
+DELIMITER //
+CREATE PROCEDURE booksBorrowed(user INT)
+BEGIN	
+	DECLARE num_loans INT;
+
+    SELECT COUNT(*) INTO num_loans
+    FROM loans
+    WHERE user = loans.patron_id;
+    
+    IF num_loans = 0 THEN
+		SELECT 'No current loans!' AS MESSAGE;
+	ELSE
+		SELECT *
+        FROM loans
+        WHERE patron_id = user;
+	END IF;
+END //
+DELIMITER ;
+
+
+-- show what books are available
+DROP PROCEDURE IF EXISTS booksAvailable;
+DELIMITER //
+CREATE PROCEDURE booksAvailable()
+BEGIN
+    SELECT *
+    FROM book
+    WHERE available = 1;
+END //
+DELIMITER ;
+
+-- call test (delete later)
+CALL booksAvailable();
+
+-- search for book information given book_id
+DROP PROCEDURE IF EXISTS bookInfo;
+DELIMITER //
+CREATE PROCEDURE bookInfo(IN p_book_id INT)
+BEGIN
+    SELECT *
+    FROM book
+    WHERE book_id = p_book_id;
+END //
+DELIMITER ;
+
+-- showComms procedure(need to add)
+-- newUser procedure(need to add)
+
