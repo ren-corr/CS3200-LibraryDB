@@ -50,10 +50,10 @@ CREATE TABLE librarian
 CREATE TABLE hold
 (
   hold_id INT PRIMARY KEY,
-  isbnNo INT,
+  book_id INT,
   wait_time INT,
   patron_id INT,
-  FOREIGN KEY (isbnNo) REFERENCES book(isbnNo),
+  FOREIGN KEY (book_id) REFERENCES book(book_id),
   FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
 );
 
