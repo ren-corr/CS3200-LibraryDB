@@ -1,3 +1,7 @@
+-- book copies table? updates when someone checks it out also has total number
+-- book club?
+-- book seller?
+
 -- create the database
 DROP DATABASE IF EXISTS libraryDB;
 CREATE DATABASE libraryDB;
@@ -14,7 +18,8 @@ CREATE TABLE book
   author VARCHAR(50),
   genre VARCHAR(50),
   book_description VARCHAR(50),
-  num_copies TINYINT,
+  -- num_copies TINYINT,
+  total_copies INT,
   available TINYINT
 );
 
@@ -34,11 +39,7 @@ CREATE TABLE patron
   pin_number INT,
   first_name VARCHAR(50),
   last_name VARCHAR(50),
-  address VARCHAR(50),
-  city VARCHAR(50) NOT NULL,
-  state CHAR(2) NOT NULL,
-  zip_code VARCHAR(20) NOT NULL,
-  phone_number VARCHAR(50)
+  address VARCHAR(50)
 );
 
 CREATE TABLE librarian
@@ -87,4 +88,22 @@ CREATE TABLE numCopies
   copy_id INT PRIMARY KEY AUTO_INCREMENT,
   isbnNo INT NOT NULL,
   FOREIGN KEY (isbnNo) REFERENCES book(isbnNo)
+);
+
+CREATE TABLE author
+(
+  author_id INT PRIMARY KEY AUTO_INCREMENT,
+  first_name VARCHAR(50) NOT NULL,
+  last_name VARCHAR(50) NOT NULL,
+  book_id INT NOT NUll,
+  FOREIGN KEY (book_id) REFERENCES book(book_id)
+);
+
+CREATE TABLE book_author
+(
+  book_id INT NOT NULL,
+  author_id INT NOT NULL,
+  PRIMARY KEY (book_id, author_id),
+  FOREIGN KEY (book_id) REFERENCES book(isbnNo),
+  FOREIGN KEY (author_id) REFERENCES author(author_id) 
 );
