@@ -1,7 +1,3 @@
--- book copies table? updates when someone checks it out also has total number
--- book club?
--- book seller?
-
 -- create the database
 DROP DATABASE IF EXISTS libraryDB;
 CREATE DATABASE libraryDB;
