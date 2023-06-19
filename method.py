@@ -9,19 +9,24 @@ import pandas as pd
 ## ####################################################################
 # Contains all methods supported by the application
 class Method:
+    def __init__(self) -> None:
+        self.isRunning = True            # bool for whether the application is currently running
+        self.userID = 0                  # int for storing user's ID
+        self.isLibrarian = False         # bool for whether the user is a librarian. True: user is a librarian. False: user is a customer
+        self.cnx = self.connectDB()       
 
     # Hook the application to the library database.
     # Print a success message if connected, and an error message if otherwise
     def connectDB(self):
         while True:             # TODO: remove the while loop since the login for MySQL will be provided
-            sqlname = input("Please enter your MySQL username: ")
-            sqlpass = input("Please enter your MySQL password: ")
+            sqlname = "root"
+            sqlpass = "sujIObsa8239*"
 
             ## Use the user provided username and password values to connect to the sharkDB database.
             try:
                 cnx = pymysql.connect(host='localhost', user=sqlname,
                                         password=sqlpass,
-                                    db='sharkdb', charset='utf8mb4',
+                                    db='libraryDB', charset='utf8mb4',
                                         cursorclass=pymysql.cursors.DictCursor)
 
                 if cnx.open:
@@ -37,7 +42,7 @@ class Method:
                 print('Error: %d: %s' % (e.args[0], e.args[1]))
 
     # Check if the user provided credentials is in the database via username and password (pre-existing user)
-    def existingUser(self, cnx, username: str, password: str):
+    def existingUser(self, username: str, password: str):
         try:
             ## Creating a cursor object
             cur = cnx.cursor()
@@ -65,7 +70,7 @@ class Method:
                 print("This login credential might not have been registered. Please register as a member or try again\n")
 
     # Check if the new username is not in the database
-    def checkUsername(self, cnx, username):
+    def checkUsername(self, username):
         try:
             ## Creating a cursor object
             cur = cnx.cursor()
@@ -112,42 +117,103 @@ class Method:
         except:
             print('Error: Unable to create the new user')
 
-    # Check all functionalities of the application
-    def showComms(self, cnx):
+    # Call a procedure given a proc and args and print the result in a table
+    def printProc(self, proc: str, args: str):
         try:
             ## Creating a cursor object
-            cur = cnx.cursor()
-            comms_select = "SELECT * FROM command"
+            cur = self.cnx.cursor()
 
-            ## Retrieve the list of town (township table)
-            cur.execute(comms_select)
-            comms = cur.fetchall();                          # store all township values in var
+            # Call the procedure
+            cur.callproc(proc, args)
+
+            # Fetch returned results
+            result = cur.fetchall()
+
+            # Print the result to the user
+            df = pd.DataFrame(result)
+            print(df)
 
             cur.close()
 
         except pymysql.Error as e:
             print('Error: %d: %s' % (e.args[0], e.args[1]))
 
-        ## Print list of acceptable inputs for pair of town and state
+    # Check all functionalities of the application
+    def showComms(self):
+        proc = 'showComms'
+        args = ''
+
         print("List of supported commands:\n")
-        data = pd.DataFrame(comms)
-        print(data)
+        self.printProc(proc, args)
 
-    # Handle command input from the user
-    def processComms(self, cnx):
-        userInput = input("Please input the id of the command you want to proceed with: ")
-
-        
     # Check all books available in the library
+    def booksAvailable(self):
+        proc = 'booksAvailable'
+        args = ''
 
-    # Return data of a book given its isbn
+        self.printProc(proc, args)
 
-    # Checks out a book given its isbn
+    # Return data of a book given the book's ID
+    def bookInfo(self):
+        proc = 'bookInfo'
+        bookID = input("Please provide the ID of the book which you would like to know more: ")
+
+        self.printProc(proc, bookID)
+
+    # Checks out a book given the book's ID
+    def bookCheckout(self):
+        proc = 'bookCheckout'
+        bookID = input("Please provide the ID of the book you would like to check out: ")
+        args = bookID + ", " + str(self.userID) 
+
+        self.printProc(proc, args)
+    
+    # Request a hold on a book given the book's ID
+    def createHold(self):
+        proc = 'createHold'
+        bookID = input("Please provide the ID of the book you would like to request a hold on: ")
+
+        self.printProc(proc, bookID)
 
     # Check all books currently checked out by the user
+    def booksBorrowed(self):
+        proc = 'booksBorrowed'
+
+        self.printProc(proc, str(self.userID))
+    
+    # Returns a book given its ID
+    def returnBook(self):
+        proc = 'returnBook'
+        bookID = input("Please provide the ID of the book you would like to return: ")
+        args = bookID + ", " + str(self.userID)
+
+        self.printProc(proc, args)
 
     # Disconnect the database
-    def disconnectDB(self, cnx):
+    def disconnectDB(self):
         print("Thank you for using the library management application!\n")
-        cnx.close
+        self.cnx.close
+
+    # Handle command input from the user
+    def processComms(self):
+        userInput = input("Please input the id of the command you want to proceed with: ")
+
+        # Match the user input to the correct comm
+        match userInput:
+            case '0':         # exits the program
+                self.isRunning = False
+            case '1':         # booksAvailable
+                self.booksAvailable()
+            case '2': 
+                self.createHold()
+            case '3':
+                self.bookCheckout()
+            case '4':
+                self.returnBook()
+            case '5':
+                self.booksBorrowed()
+            case '6':
+                self.bookInfo()
+            case '7':
+                self.showComms()
 

@@ -9,16 +9,20 @@ import method
 
 #############################################################################################
 
-method = method.Method()
-
 # Welcome message
 print("Welcome to library managment application\n")
 
 print("\nConnecting to the database...\n")
-# Connect the application to the database
-cnx = method.connectDB()
+
+# create the method object (which is the controller)
+# also establish a connection to the MySQL server
+method = method.Method()
 
 # Display the list of supported commands
 
+# Process input
+while method.isRunning:
+    method.processComms()
+
 # Disconnect from the database
-method.disconnectDB(cnx)
+method.disconnectDB()
