@@ -49,10 +49,11 @@ CREATE TABLE hold
 (
   hold_id INT PRIMARY KEY,
   book_id INT,
-  wait_time INT,
+  wait_time DATE,
   patron_id INT,
   FOREIGN KEY (book_id) REFERENCES book(book_id),
-  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number),
+  FOREIGN KEY (wait_time) REFERENCES loan(due_date)
 );
 
 CREATE TABLE overdueFees
@@ -103,6 +104,7 @@ CREATE TABLE book_author
 );
 
 -- place a book on hold
+DROP PROCEDURE IF EXISTS createHold;
 DELIMITER //
 CREATE PROCEDURE createHold(
   IN p_book_id INT,
@@ -110,24 +112,36 @@ CREATE PROCEDURE createHold(
   IN p_wait_time INT
 )
 BEGIN
-  -- check if the book exists
-  IF NOT EXISTS (SELECT 1 FROM book WHERE book_id = p_book_id) THEN
-    SIGNAL SQLSTATE '45000' -- reccomended for custom error messages 
-      SET MESSAGE_TEXT = 'Book does not exist';
-  END IF;
-  
-  -- check if the patron exists
-  IF NOT EXISTS (SELECT 1 FROM patron WHERE library_card_number = p_patron_id) THEN
+  DECLARE availability_status TINYINT;
+
+  -- check if the book exists and is available
+  SELECT available INTO availability_status
+  FROM book
+  WHERE book_id = p_book_id;
+
+  IF availability_status = 1 THEN
+    -- check if the book is already checked out
+    IF EXISTS (SELECT 1 FROM loans WHERE book_id = p_book_id) THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Book is already checked out';
+    ELSE
+      -- check if the patron exists
+      IF NOT EXISTS (SELECT 1 FROM patron WHERE library_card_number = p_patron_id) THEN
+        SIGNAL SQLSTATE '45000'
+          SET MESSAGE_TEXT = 'Patron does not exist';
+      END IF;
+
+      -- insert the hold
+      INSERT INTO hold (book_id, wait_time, patron_id)
+      VALUES (p_book_id, p_wait_time, p_patron_id);
+
+      -- display success message
+      SELECT 'Hold created successfully' AS Message;
+    END IF;
+  ELSE
     SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Patron does not exist';
+      SET MESSAGE_TEXT = 'Book is not available';
   END IF;
-
-  -- insert the hold
-  INSERT INTO hold (book_id, wait_time, patron_id)
-  VALUES (p_book_id, p_wait_time, p_patron_id);
-
- -- hold sucsessfully placed 
-  SELECT 'Hold created successfully' AS Message;
 END //
 DELIMITER ;
 
