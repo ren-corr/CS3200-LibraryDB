@@ -103,6 +103,9 @@ CREATE TABLE book_author
   FOREIGN KEY (author_id) REFERENCES author(author_id) 
 );
 
+
+-- add all procedures and functions
+
 -- place a book on hold
 DROP PROCEDURE IF EXISTS createHold;
 DELIMITER //
@@ -278,6 +281,98 @@ BEGIN
 END //
 DELIMITER ;
 
--- showComms procedure(need to add)
--- newUser procedure(need to add)
+-- add book to database
+DROP PROCEDURE IF EXISTS addBook;
+DELIMITER //
+CREATE PROCEDURE addBook(
+	IN p_title VARCHAR(50),
+    IN p_author VARCHAR(50),
+    IN p_genre VARCHAR(50),
+    IN p_description VARCHAR(50),
+    IN p_total_copies INT,
+    IN p_available TINYINT
+)
+BEGIN
+	-- insert book into book table
+    INSERT INTO book(title, author, genre, book_description, total_copies, available)
+    VALUES (p_title, p_author, p_genre, p_description, p_total_copies, p_available);
+    
+    SELECT 'Book added sucessfully!' AS MESSAGE;
+END //
+DELIMITER ;
+
+-- remove book from database
+DROP PROCEDURE IF EXISTS removeBook;
+DELIMITER //
+CREATE PROCEDURE removeBook(IN p_book_id INT)
+BEGIN 
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		ROLLBACK;
+        RESIGNAL;
+	END;
+    
+    START TRANSACTION;
+    
+    -- delete book from loans
+    DELETE FROM loans
+    WHERE book_id = p_book_id;
+    
+    -- rollback overdue fees
+    DELETE FROM overdueFees
+    WHERE book_id = p_book_id;
+    
+    -- rollback all holds
+    DELETE FROM hold
+    WHERE book_id = p_book_id;
+    
+    -- delete from copies table
+    DELETE FROM numCopies
+    WHERE book_id = p_book_id;
+    
+    -- delete from author table
+    DELETE FROM book_author 
+    WHERE book_id = p_book_id;
+    
+    -- delete book-author relationship
+    DELETE FROM book_author
+    WHERE book_id = p_book_id;
+    
+    -- delete from book table
+    DELETE FROM book
+    WHERE book_id = p_book_id;
+    
+    COMMIT;
+    
+    SELECT 'Book removed successfully!' AS MESSAGE;
+END //
+DELIMITER ;
+
+-- show all of the user's overdue fees
+DROP PROCEDURE IF EXISTS checkOverdueFees;
+DELIMITER //
+CREATE PROCEDURE checkOverdueFees(p_patron_id INT)
+BEGIN	
+	DECLARE num_fees INT;
+
+    SELECT COUNT(*) INTO num_fees
+    FROM overdueFees
+    WHERE p_patron_id= overdueFees.patron_id;
+    
+    IF num_fees = 0 THEN
+		SELECT 'No overdue fees!' AS MESSAGE;
+	ELSE
+		SELECT *
+        FROM loans
+        WHERE patron_id = user;
+	END IF;
+END //
+DELIMITER ;
+
+-- createUser (need to add)
+
+
+
+
+
 
