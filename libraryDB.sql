@@ -12,7 +12,7 @@ CREATE TABLE book
   title VARCHAR(50) UNIQUE,
   author VARCHAR(50),
   genre VARCHAR(50),
-  book_description VARCHAR(50),
+  book_description VARCHAR(250),
   total_copies INT,
   available TINYINT
 );
@@ -301,7 +301,6 @@ BEGIN
 END //
 DELIMITER ;
 
-
 -- remove book from database
 DROP PROCEDURE IF EXISTS removeBook;
 DELIMITER //
@@ -397,58 +396,78 @@ BEGIN
 		INSERT INTO patron(library_card_number, pin_number, first_name, last_name, address)
 		VALUES (p_library_card_number, p_pin_number, p_first_name, p_last_name, p_address);
         
-		SELECT 'Patron added successfully!' AS MESSAGE, p_library_card_number AS library_card_number;
+		SELECT 'Patron added successfully!' AS MESSAGE;
 	END IF;
 END //
 DELIMITER ;
 
+INSERT INTO book (title, author, genre, book_description, total_copies, available)
+VALUES
+  ('To Kill a Mockingbird', 'Harper Lee', 'Fiction', 'Classic novel set in the 1930s', 5, 3),
+  ('1984', 'George Orwell', 'Fiction', 'Dystopian novel about totalitarianism', 8, 6),
+  ('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 'American classic exploring the Jazz Age', 10, 10),
+  ('Pride and Prejudice', 'Jane Austen', 'Fiction', 'Romantic novel set in 19th-century England', 6, 2),
+  ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 'Coming-of-age story of a teenager in New York City', 4, 1),
+  ('To the Lighthouse', 'Virginia Woolf', 'Fiction', 'Modernist novel exploring themes of time and consciousness', 3, 3);
+  
+  -- Insert test data for library table
+INSERT INTO library (library_id, address, city, state, zip_code, phone_number)
+VALUES
+  (1, '123 Main St', 'New York', 'NY', '10001', '123-456-7890'),
+  (2, '456 Elm St', 'Los Angeles', 'CA', '90001', '987-654-3210');
+  
+INSERT INTO patron (library_card_number, pin_number, first_name, last_name, address)
+VALUES
+  (1, 1234, 'John', 'Doe', '123 Main St'),
+  (2, 5678, 'Jane', 'Smith', '456 Elm St');
+  
+INSERT INTO librarian (librarian_id, branch, username, password)
+VALUES
+  (1, 1, 'librarian1', 'password1'),
+  (2, 2, 'librarian2', 'password2');
+  
+-- fix hold FK situation
 
-DROP FUNCTION IF EXISTS loginLib;
-DELIMITER //
-CREATE FUNCTION loginLib(p_username VARCHAR(50), p_password VARCHAR(50))
-RETURNS INT
-DETERMINISTIC READS SQL DATA
-BEGIN
-	DECLARE p_librarian_id INT;
+INSERT INTO overdueFees (book_id, days_overdue, amt_owed, patron_id)
+VALUES
+  (1, 10, 1.50, 1),
+  (3, 5, 0.75, 2);
+  
+INSERT INTO loans (loan_id, patron_id, book_id, loan_date, due_date)
+VALUES
+  (1, 1, 1, '2023-06-10', '2023-06-24'),
+  (2, 2, 3, '2023-06-12', '2023-06-26');
+  
+INSERT INTO numCopies (copy_id, book_id)
+VALUES
+  (1, 1),
+  (2, 1),
+  (3, 2),
+  (4, 3);
+  
+INSERT INTO author (author_id, first_name, last_name, book_id)
+VALUES
+  (1, 'Harper', 'Lee', 1),
+  (2, 'George', 'Orwell', 2),
+  (3, 'F. Scott', 'Fitzgerald', 3),
+  (4, 'Jane', 'Austen', 4),
+  (5, 'J.D.', 'Salinger', 5),
+  (6, 'Virginia', 'Woolf', 6);
+  
+INSERT INTO book_author (book_id, author_id)
+VALUES
+  (1, 1),
+  (2, 2),
+  (3, 3),
+  (4, 4),
+  (5, 5),
+  (6, 6);
+ 
+-- select all books
+SELECT * FROM book;
 
-	-- check if username and password exist in librarian table
-    SELECT librarian_id INTO p_librarian_id
-    FROM librarian
-    WHERE username = p_username AND password = p_password;
-    
-    IF p_librarian_id IS NULL THEN
-		RETURN 0;
-	ELSE 
-		RETURN p_librarian_id;
-	END IF;
-END//
-DELIMITER ;
-	
-DROP FUNCTION IF EXISTS loginPatron;
-DELIMITER //
-CREATE FUNCTION loginPatron(p_pin INT)
-RETURNS INT
-DETERMINISTIC READS SQL DATA
-BEGIN
-	DECLARE p_library_card_number INT;
-    
-	-- check if patron already exists
-    SELECT library_card_number INTO p_library_card_number
-    FROM patron
-    WHERE pin = p_pin;
-    
-    IF p_library_card_number IS NULL THEN
-		RETURN 0;
-	ELSE
-		RETURN p_library_card_number;
-	END IF;
-END //
-DELIMITER ;
-
-
-
-
-
-
-
-
+-- select books checked out for specific patron 
+SELECT book.*
+FROM book
+JOIN loans ON book.book_id = loans.book_id
+WHERE loans.patron_id = 1;
