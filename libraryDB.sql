@@ -103,6 +103,19 @@ CREATE TABLE book_author
   FOREIGN KEY (author_id) REFERENCES author(author_id) 
 );
 
+CREATE TABLE showCommsLib
+(
+	comm_id INT PRIMARY KEY AUTO_INCREMENT,
+    comm_name VARCHAR(50),
+    comm_description VARCHAR(100)
+);
+
+CREATE TABLE showCommsPatron
+(
+	comm_id INT PRIMARY KEY AUTO_INCREMENT,
+    comm_name VARCHAR(50),
+    comm_description VARCHAR(100)
+);
 
 -- add all procedures and functions
 
@@ -165,7 +178,7 @@ BEGIN
     FROM book
     WHERE book_id = p_book_id;
     
-    IF availability_status = 1 THEN
+    IF availability_status != 0 THEN
         -- set the book as unavailable
         UPDATE book
         SET available = 0
@@ -186,6 +199,9 @@ BEGIN
 END //
 DELIMITER ;
 
+
+-- test call
+CALL bookCheckout(1, 2);
 
 -- return book
 DROP PROCEDURE IF EXISTS returnBook;
@@ -233,6 +249,8 @@ BEGIN
 END //
 DELIMITER ;
 
+-- test call 
+CALL returnBook(1, 2);
 
 -- show all books being borrowed by the user
 DROP PROCEDURE IF EXISTS booksBorrowed;
@@ -255,6 +273,8 @@ BEGIN
 END //
 DELIMITER ;
 
+-- test call
+CALL booksBorrowed(1);
 
 -- show what books are available
 DROP PROCEDURE IF EXISTS booksAvailable;
@@ -281,6 +301,9 @@ BEGIN
 END //
 DELIMITER ;
 
+-- test call
+CALL bookInfo(1);
+
 -- add book to database
 DROP PROCEDURE IF EXISTS addBook;
 DELIMITER //
@@ -300,6 +323,9 @@ BEGIN
     SELECT 'Book added sucessfully!' AS MESSAGE;
 END //
 DELIMITER ;
+
+-- test call
+CALL addBook('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', 'An adventure of a hobbit and a group of dwarves', 1, 1);
 
 -- remove book from database
 DROP PROCEDURE IF EXISTS removeBook;
@@ -348,6 +374,9 @@ BEGIN
 END //
 DELIMITER ;
 
+-- test call
+CALL removeBook(1);
+
 -- show all of the user's overdue fees
 DROP PROCEDURE IF EXISTS checkOverdueFees;
 DELIMITER //
@@ -368,6 +397,9 @@ BEGIN
 	END IF;
 END //
 DELIMITER ;
+
+-- test call
+CALL checkOverdueFees(2);
 
 -- register new patron
 DROP PROCEDURE IF EXISTS newPatron;
@@ -396,10 +428,61 @@ BEGIN
 		INSERT INTO patron(library_card_number, pin_number, first_name, last_name, address)
 		VALUES (p_library_card_number, p_pin_number, p_first_name, p_last_name, p_address);
         
-		SELECT 'Patron added successfully!' AS MESSAGE;
+		SELECT 'Patron added successfully!' AS MESSAGE, p_library_card_number AS library_card_number;
 	END IF;
 END //
 DELIMITER ;
+
+-- test call
+CALL newPatron(1234, 'Peter', 'Parker', '500 Water Street');
+
+DROP FUNCTION IF EXISTS loginLib;
+DELIMITER //
+CREATE FUNCTION loginLib(p_username VARCHAR(50), p_password VARCHAR(50))
+RETURNS INT
+DETERMINISTIC READS SQL DATA
+BEGIN
+	DECLARE p_librarian_id INT;
+
+	-- check if username and password exist in librarian table
+    SELECT librarian_id INTO p_librarian_id
+    FROM librarian
+    WHERE username = p_username AND password = p_password;
+
+    IF p_librarian_id IS NULL THEN
+		RETURN 0;
+	ELSE 
+		RETURN p_librarian_id;
+	END IF;
+END//
+DELIMITER ;
+
+-- test call
+SELECT loginLib('librarian1', 'password1');
+
+DROP FUNCTION IF EXISTS loginPatron;
+DELIMITER //
+CREATE FUNCTION loginPatron(p_pin INT)
+RETURNS INT
+DETERMINISTIC READS SQL DATA
+BEGIN
+	DECLARE p_library_card_number INT;
+
+	-- check if patron already exists
+    SELECT library_card_number INTO p_library_card_number
+    FROM patron
+    WHERE pin = p_pin;
+
+    IF p_library_card_number IS NULL THEN
+		RETURN 0;
+	ELSE
+		RETURN p_library_card_number;
+	END IF;
+END //
+DELIMITER ;
+
+-- test call
+SELECT loginPatron(1234);
 
 INSERT INTO book (title, author, genre, book_description, total_copies, available)
 VALUES
@@ -462,6 +545,22 @@ VALUES
   (4, 4),
   (5, 5),
   (6, 6);
+  
+INSERT INTO showCommsLib(comm_name, comm_description)
+VALUES
+('addBook', 'Add a book to the database'),
+('removeBook', 'Remove a book from the database'),
+('booksAvailable', 'Show what books are available'),
+('bookInfo', 'Show the information of a book');
+
+INSERT INTO showCommsPatron(comm_name, comm_description)
+VALUES
+('booksAvailable', 'Show which books are available'),
+('createHold', 'Place a hold on the book'),
+('bookCheckout', 'Check out a book'),
+('returnBook', 'Return a book'),
+('booksBorrowed', 'See the books on loan'),
+('checkOverdueFees', 'Check overdue fees'); 
  
 -- select all books
 SELECT * FROM book;
