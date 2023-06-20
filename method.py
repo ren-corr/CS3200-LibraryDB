@@ -7,6 +7,16 @@ import pymysql
 import pandas as pd
 
 ## ####################################################################
+
+# Ensuring that the input from the user is an int
+# Given the prompt to the user
+# Return a string of the user's input
+def inputint(string: str):
+    while not userInput.isDigit():
+        userInput = input(string)
+
+    return userInput
+
 # Contains all methods supported by the application
 class Method:
     def __init__(self) -> None:
@@ -62,13 +72,10 @@ class Method:
         except pymysql.Error as e:
             print('Error: %d: %s' % (e.args[0], e.args[1]))
 
-    # Check all functionalities of the application
-    def showComms(self):
-        proc = 'showComms'
-        args = ''
-
-        print("List of supported commands:\n")
-        self.printProc(proc, args)
+    # Disconnect the database
+    def disconnectDB(self):
+        print("Thank you for using the library management application!\n")
+        self.cnx.close
 
     # Check all books available in the library
     def booksAvailable(self):
@@ -113,13 +120,141 @@ class Method:
 
         self.printProc(proc, args)
 
-    # Disconnect the database
-    def disconnectDB(self):
-        print("Thank you for using the library management application!\n")
-        self.cnx.close
+    # Check the overdue fees of the current user
+    def checkOverdueFees(self):
+        proc = 'checkOverdueFees'
 
-    # Handle command input from the user
-    def processComms(self):
+        self.printProc(proc, str(self.userID))
+
+    # Create a new patron in the database
+    def createPatron(self):
+        # prompt to create a new user
+        pin = inputint("Please provide a pin number you would like to use for logging in: ")
+        first = input("What is your first name? ")
+        last = input("What is your last name? ")
+        address = input("Where do you live? ")
+
+        proc = 'newPatron'
+        args = pin + ', ' + first + ', ' + last + ', ' + address
+
+        try:
+            ## Creating a cursor object
+            cur = self.cnx.cursor()
+
+            # Call the procedure
+            cur.callproc(proc, args)
+        except pymysql.err.OperationalError as e:
+            print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+    # Logging in a user assuming that they are a returning patron
+    def existPatron(self):
+        proc = 'loginPatron'        # TODO: confirm that the procedure has this name
+        pin = input("What is the PIN of your patron account? ")
+
+        try:
+            ## Creating a cursor object
+            cur = self.cnx.cursor()
+
+            # Call the procedure
+            cur.callproc(proc, pin)
+
+            # Store the returned user id into the class's field
+            self.userID = cur.fetchone
+
+        except pymysql.err.OperationalError as e:
+            print('Error: %d: %s' % (e.args[0], e.args[1]))        
+
+    # Handle login command input from the user
+    def loginPatron(self):
+        # indicate if the user is new or old member
+        while isNew < 0 or isNew > 1:
+            isNew = inputint("Please enter 1 if you would like to register as a new patron or 0 if you are an existing member: ")
+
+        match isNew:
+            case 1:
+                # create new user
+                self.createPatron()
+
+                # loop back to the beginning
+                self.loginPatron()
+
+            case 0:
+                # logging in the patron
+                self.existPatron()
+
+                # failed to login
+                if self.userID <= 0:
+                    print("Patron PIN not recognized in the database. Please try again\n")
+                    self.loginPatron()
+                else:
+                    string = f"Successfully logged into the server! Welcome user {self.userID}!\n"
+                    print(string)
+
+    # Handle login command input from the user (librarian)
+    def loginLib(self):
+        username = input("Please provide your librarian's username: ")
+        password = input("Please provide your librarian's password: ")
+
+        proc = 'loginLib'
+        args = username + ', ' + password
+
+        try:
+            ## Creating a cursor object
+            cur = self.cnx.cursor()
+
+            # Call the procedure
+            cur.callproc(proc, args)
+
+            # Store the returned user id into the class's field
+            self.userID = cur.fetchone
+
+        except pymysql.err.OperationalError as e:
+            print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+        if self.userID <= 0:
+            print("Login credentials not recognized in the database. Please try again\n")
+            self.loginLib()
+        else:
+            string = f"Successfully logged in as a librarian! Welcome librarian {self.userID}!\n"
+            print(string)
+
+    # TODO: Show commands to the user (librarian)
+    def showCommsLib(self):
+        proc = 'showCommsLib'
+        args = ''
+
+        print("List of supported commands:\n")
+        self.printProc(proc, args)
+
+    # Handle command input from the user (librarian)
+    def processCommsLib(self):
+        userInput = input("Please input the id of the command you want to proceed with: ")
+
+        # Match the user input to the correct comm
+        match userInput:
+            case '0':
+                self.isRunning = False
+            case '1':
+                self.addBook()
+            case '2':
+                self.removeBook()
+            case '3':
+                self.booksAvailable()
+            case '4':
+                self.bookInfo()
+            case _:
+                print("Invalid input. Please refer to the list of commands for the correct input\n")
+
+    # TODO: Show commands to the user (patron)
+    def showCommsPatron(self):
+        proc = 'showCommsPatron'
+        args = ''
+
+        print("List of supported commands:\n")
+        self.printProc(proc, args)
+
+    # Handle command input from the user (patron)
+    def processCommsPatron(self):
         userInput = input("Please input the id of the command you want to proceed with: ")
 
         # Match the user input to the correct comm
@@ -139,5 +274,9 @@ class Method:
             case '6':
                 self.bookInfo()
             case '7':
+                self.checkOverdueFees()
+            case '8':
                 self.showComms()
+            case _:
+                print("Invalid input. Please refer to the list of commands for the correct input\n")
 

@@ -5,9 +5,13 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 ### Required Programming Languages
 - Python
 - SQL
+
 ### Required Libraries
 - PyMySQL
 - Pandas
+- bs4
+- requests
+- time
 
 ### Required Software
 - MySQL Workbench for reading the SQL codebase
@@ -17,6 +21,12 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 - libraryDQ.sql : contains the code for building the library database (backend)
 - main.py : contains the code for running the application overall (frontend)
 - method.py : contains the code for the controller of the application along with the supported commands (frontend)
+- data.py : example of data scraping from the web for book's author and title
+
+### Instructions on building
+- Build the database *libraryDB.sql* in MySQL Workbench with your personal account
+- Change the log in credentials in the file *method.py* to the credentials of the MySQL server which you used to build the database
+    - We intentionally hidden the server login in the code instead of making it available to the user as in real life, the user would not hook the server up on their own
 
 ## Current UML Diagram of the Project
 > insert diagram img here
