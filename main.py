@@ -5,7 +5,7 @@
 ## ####################################################################
 
 import method
-
+from method import inputint
 
 #############################################################################################
 
@@ -19,12 +19,11 @@ print("\nConnecting to the database...\n")
 method = method.Method()
 
 # Prompt user type indication to the user
-while isPatron < 0 or isPatron > 1:
-    isPatron = int(input("Please enter 1 if you are logging in as a patron and 0 if otherwise\n"))
+isPatron = inputint("Please enter 1 if you are logging in as a patron and 0 if otherwise\n")
 
 # Display the list of supported commands accordingly
 match isPatron:
-    case 1:       # user is a patron
+    case '1':       # user is a patron
         # process login
         method.loginPatron()
 
@@ -35,7 +34,7 @@ match isPatron:
         while method.isRunning:
             method.processCommsPatron()
     
-    case 0:       # user is a librarian
+    case '0':       # user is a librarian
         # process login
         method.loginLib()
         
@@ -47,13 +46,9 @@ match isPatron:
             method.processCommsLib()
 
     case _:
-        print("Invalid input. Disconnecting the DB\n")
+        print("Invalid input. \n")
         method.disconnectDB()
 
-
-# Process input
-while method.isRunning:
-    method.processComms()
-
-# Disconnect from the database
-method.disconnectDB()
+if not method.isRunning:
+    # Disconnect from the database
+    method.disconnectDB()

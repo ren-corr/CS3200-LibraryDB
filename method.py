@@ -12,7 +12,9 @@ import pandas as pd
 # Given the prompt to the user
 # Return a string of the user's input
 def inputint(string: str):
-    while not userInput.isDigit():
+    userInput = input(string)
+
+    while not userInput.isdigit():
         userInput = input(string)
 
     return userInput
@@ -87,36 +89,37 @@ class Method:
     # Return data of a book given the book's ID
     def bookInfo(self):
         proc = 'bookInfo'
-        bookID = input("Please provide the ID of the book which you would like to know more: ")
+        bookID = inputint("Please provide the ID of the book which you would like to know more: ")
 
         self.printProc(proc, bookID)
 
     # Checks out a book given the book's ID
     def bookCheckout(self):
         proc = 'bookCheckout'
-        bookID = input("Please provide the ID of the book you would like to check out: ")
-        args = bookID + ", " + str(self.userID) 
+        bookID = inputint("Please provide the ID of the book you would like to check out: ")
+        args = (bookID, self.userID) 
 
         self.printProc(proc, args)
     
     # Request a hold on a book given the book's ID
     def createHold(self):
         proc = 'createHold'
-        bookID = input("Please provide the ID of the book you would like to request a hold on: ")
+        bookID = inputint("Please provide the ID of the book you would like to request a hold on: ")
+        args = (int(bookID), self.userID)
 
-        self.printProc(proc, bookID)
+        self.printProc(proc, args)
 
     # Check all books currently checked out by the user
     def booksBorrowed(self):
         proc = 'booksBorrowed'
 
-        self.printProc(proc, str(self.userID))
+        self.printProc(proc, self.userID)
     
     # Returns a book given its ID
     def returnBook(self):
         proc = 'returnBook'
         bookID = input("Please provide the ID of the book you would like to return: ")
-        args = bookID + ", " + str(self.userID)
+        args = (bookID, self.userID)
 
         self.printProc(proc, args)
 
@@ -135,7 +138,7 @@ class Method:
         address = input("Where do you live? ")
 
         proc = 'newPatron'
-        args = pin + ', ' + first + ', ' + last + ', ' + address
+        args = (pin, first, last, address)
 
         try:
             ## Creating a cursor object
@@ -167,18 +170,17 @@ class Method:
     # Handle login command input from the user
     def loginPatron(self):
         # indicate if the user is new or old member
-        while isNew < 0 or isNew > 1:
-            isNew = inputint("Please enter 1 if you would like to register as a new patron or 0 if you are an existing member: ")
+        isNew = inputint("Please enter 1 if you would like to register as a new patron or 0 if you are an existing member: ")
 
         match isNew:
-            case 1:
+            case '1':
                 # create new user
                 self.createPatron()
 
                 # loop back to the beginning
                 self.loginPatron()
 
-            case 0:
+            case '0':
                 # logging in the patron
                 self.existPatron()
 
@@ -189,6 +191,9 @@ class Method:
                 else:
                     string = f"Successfully logged into the server! Welcome user {self.userID}!\n"
                     print(string)
+            case _:
+                print("Invalid input. Please try again\n")
+                self.loginPatron()
 
     # Handle login command input from the user (librarian)
     def loginLib(self):
@@ -196,7 +201,7 @@ class Method:
         password = input("Please provide your librarian's password: ")
 
         proc = 'loginLib'
-        args = username + ', ' + password
+        args = (username, password)
 
         try:
             ## Creating a cursor object
