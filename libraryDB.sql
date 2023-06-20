@@ -369,7 +369,34 @@ BEGIN
 END //
 DELIMITER ;
 
--- createUser (need to add)
+-- register new patron
+DROP PROCEDURE IF EXISTS createUser;
+DELIMITER //
+CREATE PROCEDURE createUser(
+IN library_card_number INT,
+IN p_pin_number INT,
+IN p_first_name VARCHAR(50),
+IN p_last_name VARCHAR(50),
+IN p_address VARCHAR(50)
+)
+BEGIN
+	-- check if patron already exists
+    IF EXISTS (SELECT 1 FROM patron WHERE library_card_number = p_library_card_number) THEN
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = 'Patron already exists.';
+	ELSE
+		-- insert new patron
+		INSERT INTO patron(library_card_number, pin_number, first_name, last_name, address)
+		VALUES (p_library_card_number, p_pin_number, p_first_name, p_last_name, p_address);
+		
+        SELECT 'Patron added successfully!' AS MESSAGE;
+	END IF;
+END //
+DELIMITER ;
+    
+    
+
+
 
 
 
