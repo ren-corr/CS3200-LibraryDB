@@ -301,6 +301,7 @@ BEGIN
 END //
 DELIMITER ;
 
+
 -- remove book from database
 DROP PROCEDURE IF EXISTS removeBook;
 DELIMITER //
@@ -396,12 +397,53 @@ BEGIN
 		INSERT INTO patron(library_card_number, pin_number, first_name, last_name, address)
 		VALUES (p_library_card_number, p_pin_number, p_first_name, p_last_name, p_address);
         
-		SELECT 'Patron added successfully!' AS MESSAGE;
+		SELECT 'Patron added successfully!' AS MESSAGE, p_library_card_number AS library_card_number;
 	END IF;
 END //
 DELIMITER ;
+
+
+DROP FUNCTION IF EXISTS loginLib;
+DELIMITER //
+CREATE FUNCTION loginLib(p_username VARCHAR(50), p_password VARCHAR(50))
+RETURNS INT
+DETERMINISTIC READS SQL DATA
+BEGIN
+	DECLARE p_librarian_id INT;
+
+	-- check if username and password exist in librarian table
+    SELECT librarian_id INTO p_librarian_id
+    FROM librarian
+    WHERE username = p_username AND password = p_password;
     
+    IF p_librarian_id IS NULL THEN
+		RETURN 0;
+	ELSE 
+		RETURN p_librarian_id;
+	END IF;
+END//
+DELIMITER ;
+	
+DROP FUNCTION IF EXISTS loginPatron;
+DELIMITER //
+CREATE FUNCTION loginPatron(p_pin INT)
+RETURNS INT
+DETERMINISTIC READS SQL DATA
+BEGIN
+	DECLARE p_library_card_number INT;
     
+	-- check if patron already exists
+    SELECT library_card_number INTO p_library_card_number
+    FROM patron
+    WHERE pin = p_pin;
+    
+    IF p_library_card_number IS NULL THEN
+		RETURN 0;
+	ELSE
+		RETURN p_library_card_number;
+	END IF;
+END //
+DELIMITER ;
 
 
 
