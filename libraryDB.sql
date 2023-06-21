@@ -48,11 +48,9 @@ CREATE TABLE hold
 (
   hold_id INT PRIMARY KEY,
   book_id INT,
-  -- wait_time DATE,
   patron_id INT,
   FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE,
   FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE
-  -- FOREIGN KEY (wait_time) REFERENCES loans(due_date) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE overdueFees
@@ -153,10 +151,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- test call (change later)
--- CALL createHold(123, 1, 3);
-
-
 -- check out book
 DROP PROCEDURE IF EXISTS bookCheckout;
 DELIMITER //
@@ -199,10 +193,6 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-
-
--- test call
-CALL bookCheckout(1, 2);
 
 -- return book
 DROP PROCEDURE IF EXISTS returnBook;
@@ -256,9 +246,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- test call 
-CALL returnBook(1, 2);
-
 -- show all books being borrowed by the user
 DROP PROCEDURE IF EXISTS booksBorrowed;
 DELIMITER //
@@ -280,9 +267,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- test call
-CALL booksBorrowed(1);
-
 -- show what books are available
 DROP PROCEDURE IF EXISTS booksAvailable;
 DELIMITER //
@@ -293,9 +277,6 @@ BEGIN
     WHERE available = 1;
 END //
 DELIMITER ;
-
--- call test (delete later)
-CALL booksAvailable();
 
 -- search for book information given book_id
 DROP PROCEDURE IF EXISTS bookInfo;
@@ -339,9 +320,6 @@ BEGIN
     SELECT 'Book added sucessfully!' AS MESSAGE;
 END //
 DELIMITER ;
-
--- test call
-CALL addBook('The Hobbit', 'J.R.R. Tolkien', 'Fantasy', 'An adventure of a hobbit and a group of dwarves', 1, 1);
 
 -- remove book from database
 DROP PROCEDURE IF EXISTS removeBook;
@@ -387,9 +365,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- test call
-CALL removeBook(1);
-
 -- show all of the user's overdue fees
 DROP PROCEDURE IF EXISTS checkOverdueFees;
 DELIMITER //
@@ -410,9 +385,6 @@ BEGIN
 	END IF;
 END //
 DELIMITER ;
-
--- test call
--- CALL checkOverdueFees(2);
 
 -- register new patron
 DROP PROCEDURE IF EXISTS newPatron;
@@ -454,9 +426,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- test call
-CALL newPatron(1234, 'Peter', 'Parker', '500 Water Street');
-
 DROP FUNCTION IF EXISTS loginLib;
 DELIMITER //
 CREATE FUNCTION loginLib(p_username VARCHAR(50), p_password VARCHAR(50))
@@ -478,9 +447,6 @@ BEGIN
 END//
 DELIMITER ;
 
--- test call
-SELECT loginLib('librarian1', 'password1');
-
 DROP FUNCTION IF EXISTS loginPatron;
 DELIMITER //
 CREATE FUNCTION loginPatron(p_pin INT)
@@ -501,9 +467,6 @@ BEGIN
 	END IF;
 END //
 DELIMITER ;
-
--- test call
-SELECT loginPatron(1234);
 
 INSERT INTO book (title, author, genre, book_description, available)
 VALUES
@@ -529,8 +492,6 @@ INSERT INTO librarian (librarian_id, branch, username, password)
 VALUES
   (1, 1, 'librarian1', 'password1'),
   (2, 2, 'librarian2', 'password2');
-  
--- fix hold FK situation
 
 INSERT INTO overdueFees (book_id, days_overdue, amt_owed, patron_id)
 VALUES
