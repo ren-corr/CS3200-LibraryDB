@@ -3,7 +3,7 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 
 ## Building Specifications
 ### Required Programming Languages
-- Python (**needs to be at least 3.10**)
+- Python (**needs to be at least version 3.10**)
 - SQL
 
 ### Required Libraries
@@ -31,7 +31,7 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
     - We intentionally hidden the server login in the code instead of making it available to the user as in real life, the user would not hook the server up on their own
 
 ## Current UML Diagram of the Project
-> insert diagram img here
+![Image of UML Diagram](/image/final_proj_uml.png)
 
 ## User's Work Flow using this Application
 ![Image of User's Workflow](/image/final_user_diagram.png)
@@ -58,6 +58,8 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 ## Lessons Learned
 ### Technical Expertise Gained
 - Coding in Python and SQL while being able to integrate both to create an interactable database program
+- We were able to have a more in-depth experience of how front-end and back-end coding ties together in a project, especially
+through how we delegate our work plus how our code interact with one another
 
 ### Insights
 - What worked for this project was setting aside a chunk of hours in the day to build the database and frontend
@@ -65,10 +67,11 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 - This process is what led to a relatively stress free project.
   
 ### Contemplations/Considerations on the Approach of the Project
-- Considering the timeine of our project we could not be as complex as we would have liked but an alternative approach would have
+- Considering the timeline of our project we could not be as complex as we would have liked but an alternative approach would have
 been to implement more complex tables and filtering options for finding books
 
 ### Code not Working in the Project
+- All code functions as expected, to our knowledge
 
 ## Future Work
 Current uses: 
