@@ -38,7 +38,7 @@ class Method:
             try:
                 cnx = pymysql.connect(host='localhost', user=sqlname,
                                         password=sqlpass,
-                                    db='libraryDB1', charset='utf8mb4',         # TODO: Fix the name of the db
+                                    db='libraryDB', charset='utf8mb4',         # TODO: Fix the name of the db
                                         cursorclass=pymysql.cursors.DictCursor)
 
                 if cnx.open:
@@ -170,6 +170,30 @@ class Method:
 
         self.printProc(proc, str(self.userID))
 
+    # Add a book to the current database given all necessary fields
+    def addBook(self):
+        title = input("What is the title of the book you want to add? ")
+        author = input("Who is the author of the book? ")
+        genre = input("What is/are the genre(s) of the book? ")
+        description = input("Please provide a short description to the book: ")
+        copies = input("How many count of this book will be available in the database? ")
+        available = True
+
+        # Preparing the procedure
+        proc = 'addBook'
+        args = (title, author, genre, description, copies, available)
+
+        self.printProc(proc, args)
+
+    # Remove a book from the current database given the book's ID
+    def removeBook(self):
+        book = input("What is the ID of the book you would like to remove? ")
+
+        # Preparing the procedure
+        proc = 'removeBook'
+        
+        self.printProc(proc, book)
+
     # Create a new patron in the database
     def createPatron(self):
         # prompt to create a new user
@@ -202,8 +226,6 @@ class Method:
         # Retrieve the userID using the provided PIN
         retInput = f"{func}({pin})"
         self.userID = self.runFunc(func, pin).get(retInput)   
-
-        print(self.userID)
 
     # Handle login command input from the user
     def loginPatron(self):
@@ -238,21 +260,11 @@ class Method:
         username = input("Please provide your librarian's username: ")
         password = input("Please provide your librarian's password: ")
 
-        proc = 'loginLib'
-        args = (username, password)
+        func = 'loginLib'
+        args = f"\'{username}\', \'{password}\'"
+        retInput = f"{func}(\'{username}\', \'{password}\')"
 
-        try:
-            ## Creating a cursor object
-            cur = self.cnx.cursor()
-
-            # Call the procedure
-            cur.callproc(proc, args)
-
-            # Store the returned user id into the class's field
-            self.userID = cur.fetchone
-
-        except pymysql.err.OperationalError as e:
-            print('Error: %d: %s' % (e.args[0], e.args[1]))
+        self.userID = self.runFunc(func, args).get(retInput)
 
         if self.userID <= 0:
             print("Login credentials not recognized in the database. Please try again\n")
