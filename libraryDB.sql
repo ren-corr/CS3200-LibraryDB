@@ -1,9 +1,9 @@
 -- create the database
-DROP DATABASE IF EXISTS libraryDB;
-CREATE DATABASE libraryDB;
+DROP DATABASE IF EXISTS libraryDB1;
+CREATE DATABASE libraryDB1;
 
 -- select the database
-USE libraryDB;
+USE libraryDB1;
 
 -- create the tables
 CREATE TABLE book
@@ -29,8 +29,8 @@ CREATE TABLE library
 
 CREATE TABLE patron
 (
-  library_card_number INT PRIMARY KEY,
-  pin_number INT,
+  library_card_number INT PRIMARY KEY AUTO_INCREMENT,
+  pin_number INT UNIQUE,
   first_name VARCHAR(50),
   last_name VARCHAR(50),
   address VARCHAR(50)
@@ -49,11 +49,11 @@ CREATE TABLE hold
 (
   hold_id INT PRIMARY KEY,
   book_id INT,
-  wait_time DATE,
+  -- wait_time DATE,
   patron_id INT,
   FOREIGN KEY (book_id) REFERENCES book(book_id),
-  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number),
-  FOREIGN KEY (wait_time) REFERENCES loan(due_date)
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
+ --  FOREIGN KEY (wait_time) REFERENCES loan(due_date)
 );
 
 CREATE TABLE overdueFees
@@ -162,7 +162,7 @@ END //
 DELIMITER ;
 
 -- test call (change later)
-CALL createHold(123, 1, 3);
+-- CALL createHold(123, 1, 3);
 
 
 -- check out book
@@ -399,7 +399,7 @@ END //
 DELIMITER ;
 
 -- test call
-CALL checkOverdueFees(2);
+-- CALL checkOverdueFees(2);
 
 -- register new patron
 DROP PROCEDURE IF EXISTS newPatron;
@@ -471,7 +471,7 @@ BEGIN
 	-- check if patron already exists
     SELECT library_card_number INTO p_library_card_number
     FROM patron
-    WHERE pin = p_pin;
+    WHERE pin_number = p_pin;
 
     IF p_library_card_number IS NULL THEN
 		RETURN 0;
@@ -501,8 +501,8 @@ VALUES
   
 INSERT INTO patron (library_card_number, pin_number, first_name, last_name, address)
 VALUES
-  (1, 1234, 'John', 'Doe', '123 Main St'),
-  (2, 5678, 'Jane', 'Smith', '456 Elm St');
+  (2, 2345, 'John', 'Doe', '123 Main St'),  -- TODO: fix the id of the patrons
+  (3, 5678, 'Jane', 'Smith', '456 Elm St');
   
 INSERT INTO librarian (librarian_id, branch, username, password)
 VALUES
@@ -513,24 +513,24 @@ VALUES
 
 INSERT INTO overdueFees (book_id, days_overdue, amt_owed, patron_id)
 VALUES
-  (1, 10, 1.50, 1),
+  (2, 10, 1.50, 1),
   (3, 5, 0.75, 2);
   
 INSERT INTO loans (loan_id, patron_id, book_id, loan_date, due_date)
 VALUES
-  (1, 1, 1, '2023-06-10', '2023-06-24'),
+  (1, 1, 2, '2023-06-10', '2023-06-24'),
   (2, 2, 3, '2023-06-12', '2023-06-26');
   
 INSERT INTO numCopies (copy_id, book_id)
 VALUES
-  (1, 1),
-  (2, 1),
+  (1, 4),
+  -- (2, 1),
   (3, 2),
   (4, 3);
   
 INSERT INTO author (author_id, first_name, last_name, book_id)
 VALUES
-  (1, 'Harper', 'Lee', 1),
+  -- (1, 'Harper', 'Lee', 1),
   (2, 'George', 'Orwell', 2),
   (3, 'F. Scott', 'Fitzgerald', 3),
   (4, 'Jane', 'Austen', 4),
@@ -539,7 +539,7 @@ VALUES
   
 INSERT INTO book_author (book_id, author_id)
 VALUES
-  (1, 1),
+  -- (1, 1),
   (2, 2),
   (3, 3),
   (4, 4),

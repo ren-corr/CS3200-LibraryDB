@@ -38,7 +38,7 @@ class Method:
             try:
                 cnx = pymysql.connect(host='localhost', user=sqlname,
                                         password=sqlpass,
-                                    db='libraryDB', charset='utf8mb4',
+                                    db='libraryDB1', charset='utf8mb4',         # TODO: Fix the name of the db
                                         cursorclass=pymysql.cursors.DictCursor)
 
                 if cnx.open:
@@ -70,6 +70,47 @@ class Method:
             print(df)
 
             cur.close()
+
+        except pymysql.Error as e:
+            print('Error: %d: %s' % (e.args[0], e.args[1]))
+
+    # Call a function given the function name and args and return the dict value of the function
+    def runFunc(self, func: str, args: str):
+        try:
+            # Create a cursor object
+            cur = self.cnx.cursor()
+
+            # Prepare the SQL statement
+            sql = f"SELECT {func}({args})"
+
+            # Execute the function
+            cur.execute(sql)
+
+            # Fetch and return the result
+            result = cur.fetchone()
+            cur.close()
+
+            return result
+        
+        except pymysql.Error as e:
+            print('Error: %d: %s' % (e.args[0], e.args[1]))
+            return 0
+
+    # Print a table given its select statement
+    def printTable(self, select: str):
+        try:
+            # Create the cursor object
+            cur = self.cnx.cursor()
+
+            # Retrieve the result table
+            cur.execute(select)
+            result = cur.fetchall()
+
+            cur.close()
+
+            # Print the data as a table
+            data = pd.DataFrame(result)
+            print(data)
 
         except pymysql.Error as e:
             print('Error: %d: %s' % (e.args[0], e.args[1]))
@@ -146,26 +187,23 @@ class Method:
 
             # Call the procedure
             cur.callproc(proc, args)
+
+            # Print message
+            print(cur.fetchone())
+
         except pymysql.err.OperationalError as e:
             print('Error: %d: %s' % (e.args[0], e.args[1]))
 
     # Logging in a user assuming that they are a returning patron
     def existPatron(self):
-        proc = 'loginPatron'        # TODO: confirm that the procedure has this name
+        func = 'loginPatron'        # TODO: confirm that the procedure has this name
         pin = input("What is the PIN of your patron account? ")
 
-        try:
-            ## Creating a cursor object
-            cur = self.cnx.cursor()
+        # Retrieve the userID using the provided PIN
+        retInput = f"{func}({pin})"
+        self.userID = self.runFunc(func, pin).get(retInput)   
 
-            # Call the procedure
-            cur.callproc(proc, pin)
-
-            # Store the returned user id into the class's field
-            self.userID = cur.fetchone
-
-        except pymysql.err.OperationalError as e:
-            print('Error: %d: %s' % (e.args[0], e.args[1]))        
+        print(self.userID)
 
     # Handle login command input from the user
     def loginPatron(self):
@@ -195,7 +233,7 @@ class Method:
                 print("Invalid input. Please try again\n")
                 self.loginPatron()
 
-    # Handle login command input from the user (librarian)
+    # TODO: Handle login command input from the user (librarian)
     def loginLib(self):
         username = input("Please provide your librarian's username: ")
         password = input("Please provide your librarian's password: ")
@@ -223,13 +261,10 @@ class Method:
             string = f"Successfully logged in as a librarian! Welcome librarian {self.userID}!\n"
             print(string)
 
-    # TODO: Show commands to the user (librarian)
+    # Show commands to the user (librarian)
     def showCommsLib(self):
-        proc = 'showCommsLib'
-        args = ''
-
         print("List of supported commands:\n")
-        self.printProc(proc, args)
+        self.printTable("SELECT * FROM showCommsLib")
 
     # Handle command input from the user (librarian)
     def processCommsLib(self):
@@ -250,13 +285,10 @@ class Method:
             case _:
                 print("Invalid input. Please refer to the list of commands for the correct input\n")
 
-    # TODO: Show commands to the user (patron)
+    # Show commands to the user (patron)
     def showCommsPatron(self):
-        proc = 'showCommsPatron'
-        args = ''
-
         print("List of supported commands:\n")
-        self.printProc(proc, args)
+        self.printTable("SELECT * FROM showCommsPatron")
 
     # Handle command input from the user (patron)
     def processCommsPatron(self):
