@@ -3,7 +3,7 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 
 ## Building Specifications
 ### Required Programming Languages
-- Python
+- Python (**needs to be at least 3.10**)
 - SQL
 
 ### Required Libraries
