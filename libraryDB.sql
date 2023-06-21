@@ -173,6 +173,13 @@ BEGIN
     DECLARE availability_status TINYINT;
     DECLARE v_loan_id INT;
 
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		ROLLBACK;
+        SELECT 'An error occurred. Book checkout failed' AS MESSAGE;
+	END;
+    
+    START TRANSACTION;
     -- check if the book exists and is available
     SELECT available INTO availability_status
     FROM book
@@ -191,7 +198,9 @@ BEGIN
         -- insert a new loan record
         INSERT INTO loans (loan_id, patron_id, book_id, loan_date, due_date)
         VALUES (v_loan_id, p_patron_id, p_book_id, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 2 WEEK));
-
+        
+		COMMIT;
+        
         SELECT 'Title borrowed successfully!' AS Message;
     ELSE
         SELECT 'Title not available.' AS Message;
@@ -212,6 +221,14 @@ CREATE PROCEDURE returnBook(
 )
 BEGIN
 	DECLARE p_days_overdue INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+		ROLLBACK;
+        SELECT 'An error occurred. Book return failed.' AS MESSAGE;
+	END;
+    
+    START TRANSACTION;
     
 	IF EXISTS (SELECT * FROM loans WHERE book_id = p_book_id) THEN
 	  -- calculate days overdue
@@ -238,11 +255,9 @@ BEGIN
 	  DELETE FROM loans
 	  WHERE book_id = p_book_id AND patron_id = p_patron_id;
 	  SELECT 'Book returned successfully.' AS MESSAGE;
-	  -- 
-	  IF p_days_overdue > 0 THEN
-		SELECT amt_owed
-		FROM overdueFees;
-		END IF;
+	  
+      COMMIT;
+        
 	ELSE
 		SELECT 'Book not found in loans' AS MESSAGE;
     END IF;
@@ -316,9 +331,19 @@ CREATE PROCEDURE addBook(
     IN p_available TINYINT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN 
+		ROLLBACK;
+        SELECT 'An error occurred. Book addition failed.' AS MESSAGE;
+	END;
+    
+    START TRANSACTION;
+    
 	-- insert book into book table
     INSERT INTO book(title, author, genre, book_description, total_copies, available)
     VALUES (p_title, p_author, p_genre, p_description, p_total_copies, p_available);
+    
+    COMMIT;  
     
     SELECT 'Book added sucessfully!' AS MESSAGE;
 END //
@@ -413,6 +438,12 @@ IN p_address VARCHAR(50)
 BEGIN
 	DECLARE p_library_card_number INT;
     
+    DECLARE EXIT HANDLER  FOR SQLEXCEPTION
+    BEGIN
+		ROLLBACK;
+        SELECT 'An error occurred. Patron addition failed.' AS MESSAGE;
+	END;
+    START TRANSACTION;
     -- check if patron already exists
     IF EXISTS (
 		SELECT 1 FROM patron
@@ -427,6 +458,8 @@ BEGIN
 		-- insert new patron
 		INSERT INTO patron(library_card_number, pin_number, first_name, last_name, address)
 		VALUES (p_library_card_number, p_pin_number, p_first_name, p_last_name, p_address);
+        
+        COMMIT ;
         
 		SELECT 'Patron added successfully!' AS MESSAGE, p_library_card_number AS library_card_number;
 	END IF;
@@ -548,19 +581,21 @@ VALUES
   
 INSERT INTO showCommsLib(comm_name, comm_description)
 VALUES
-('addBook', 'Add a book to the database'),
-('removeBook', 'Remove a book from the database'),
-('booksAvailable', 'Show what books are available'),
-('bookInfo', 'Show the information of a book');
+('addBook', 'Add a book to the database.'),
+('removeBook', 'Remove a book from the database.'),
+('booksAvailable', 'Show what books are available.'),
+('bookInfo', 'Show the information of a book.'),
+('Exit', 'Exit page.');
 
 INSERT INTO showCommsPatron(comm_name, comm_description)
 VALUES
-('booksAvailable', 'Show which books are available'),
-('createHold', 'Place a hold on the book'),
-('bookCheckout', 'Check out a book'),
-('returnBook', 'Return a book'),
-('booksBorrowed', 'See the books on loan'),
-('checkOverdueFees', 'Check overdue fees'); 
+('booksAvailable', 'Show which books are available.'),
+('createHold', 'Place a hold on the book.'),
+('bookCheckout', 'Check out a book.'),
+('returnBook', 'Return a book.'),
+('booksBorrowed', 'See the books on loan.'),
+('checkOverdueFees', 'Check overdue fees.'),
+('Exit', 'Exit application.'); 
  
 -- select all books
 SELECT * FROM book;
