@@ -13,7 +13,6 @@ CREATE TABLE book
   author VARCHAR(50),
   genre VARCHAR(50),
   book_description VARCHAR(250),
-  total_copies INT,
   available TINYINT
 );
 
@@ -52,7 +51,7 @@ CREATE TABLE hold
   -- wait_time DATE,
   patron_id INT,
   FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE
   -- FOREIGN KEY (wait_time) REFERENCES loans(due_date) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
@@ -75,13 +74,6 @@ CREATE TABLE loans
   loan_date DATE,
   due_date DATE,
   FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE,
-  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE
-);
-
-CREATE TABLE numCopies
-(
-  copy_id INT PRIMARY KEY AUTO_INCREMENT,
-  book_id INT NOT NULL,
   FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -185,7 +177,7 @@ BEGIN
     FROM book
     WHERE book_id = p_book_id;
     
-    IF availability_status != 0 THEN
+    IF availability_status = 1 THEN
         -- set the book as unavailable
         UPDATE book
         SET available = 0
@@ -327,7 +319,6 @@ CREATE PROCEDURE addBook(
     IN p_author VARCHAR(50),
     IN p_genre VARCHAR(50),
     IN p_description VARCHAR(50),
-    IN p_total_copies INT,
     IN p_available TINYINT
 )
 BEGIN
@@ -340,8 +331,8 @@ BEGIN
     START TRANSACTION;
     
 	-- insert book into book table
-    INSERT INTO book(title, author, genre, book_description, total_copies, available)
-    VALUES (p_title, p_author, p_genre, p_description, p_total_copies, p_available);
+    INSERT INTO book(title, author, genre, book_description, available)
+    VALUES (p_title, p_author, p_genre, p_description, p_available);
     
     COMMIT;  
     
@@ -377,9 +368,6 @@ BEGIN
     DELETE FROM hold
     WHERE book_id = p_book_id;
     
-    -- delete from copies table
-    DELETE FROM numCopies
-    WHERE book_id = p_book_id;
     
     -- delete from author table
     DELETE FROM book_author 
@@ -517,14 +505,14 @@ DELIMITER ;
 -- test call
 SELECT loginPatron(1234);
 
-INSERT INTO book (title, author, genre, book_description, total_copies, available)
+INSERT INTO book (title, author, genre, book_description, available)
 VALUES
-  ('To Kill a Mockingbird', 'Harper Lee', 'Fiction', 'Classic novel set in the 1930s', 5, 3),
-  ('1984', 'George Orwell', 'Fiction', 'Dystopian novel about totalitarianism', 8, 6),
-  ('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 'American classic exploring the Jazz Age', 10, 10),
-  ('Pride and Prejudice', 'Jane Austen', 'Fiction', 'Romantic novel set in 19th-century England', 6, 2),
-  ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 'Coming-of-age story of a teenager in New York City', 4, 1),
-  ('To the Lighthouse', 'Virginia Woolf', 'Fiction', 'Modernist novel exploring themes of time and consciousness', 3, 3);
+  ('To Kill a Mockingbird', 'Harper Lee', 'Fiction', 'Classic novel set in the 1930s', 1),
+  ('1984', 'George Orwell', 'Fiction', 'Dystopian novel about totalitarianism', 1),
+  ('The Great Gatsby', 'F. Scott Fitzgerald', 'Fiction', 'American classic exploring the Jazz Age', 1),
+  ('Pride and Prejudice', 'Jane Austen', 'Fiction', 'Romantic novel set in 19th-century England', 1),
+  ('The Catcher in the Rye', 'J.D. Salinger', 'Fiction', 'Coming-of-age story of a teenager in New York City', 1),
+  ('To the Lighthouse', 'Virginia Woolf', 'Fiction', 'Modernist novel exploring themes of time and consciousness', 1);
   
   -- Insert test data for library table
 INSERT INTO library (library_id, address, city, state, zip_code, phone_number)
@@ -553,13 +541,6 @@ INSERT INTO loans (loan_id, patron_id, book_id, loan_date, due_date)
 VALUES
   (1, 1, 2, '2023-06-10', '2023-06-24'),
   (2, 2, 3, '2023-06-12', '2023-06-26');
-  
-INSERT INTO numCopies (copy_id, book_id)
-VALUES
-  (1, 4),
-  -- (2, 1),
-  (3, 2),
-  (4, 3);
   
 INSERT INTO author (author_id, first_name, last_name, book_id)
 VALUES
