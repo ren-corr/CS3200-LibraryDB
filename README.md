@@ -60,12 +60,29 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
 - Coding in Python and SQL while being able to integrate both to create an interactable database program
 
 ### Insights
-
+- What worked for this project was setting aside a chunk of hours in the day to build the database and frontend
+- The group worked in small teams to complete each task and we contiunually updated and and requested more functionality to be added
+- This process is what led to a relatively stress free project.
+  
 ### Contemplations/Considerations on the Approach of the Project
+- Considering the timeine of our project we could not be as complex as we would have liked but an alternative approach would have
+been to implement more complex tables and filtering options for finding books
 
 ### Code not Working in the Project
 
 ## Future Work
+Current uses: 
+- Book management: Tracking book availability, managing loans and returns, and getting book information.
+- Patron management: Storing patron information, managing holds, and tracking overdue fees.
+- Librarian managment: Adding and removing books, checking availabe books.
+
+Future uses:
+- Recommendation system: Implementing a recommendation engine based on patron preferences and borrowing history to suggest relevant books.
+- Interlibrary loan management: Facilitating the borrowing and lending of books between different library branches or even external 
+  libraries.
+- Integration with external systems: Integrating the library database with online catalog systems, self-checkout kiosks, or mobile 
+  applications.
+  
 ### Planned Uses of the Database
 - Example work to demonstrate understanding and application of Python and SQL
 
