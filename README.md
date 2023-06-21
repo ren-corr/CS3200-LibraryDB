@@ -31,7 +31,7 @@ CS 3200 Final Project by Trang Do, Ren Corr and Morgan Spencer
     - We intentionally hidden the server login in the code instead of making it available to the user as in real life, the user would not hook the server up on their own
 
 ## Current UML Diagram of the Project
-> insert diagram img here
+![Image of UML Diagram](/image/final_proj_uml.png)
 
 ## User's Work Flow using this Application
 ![Image of User's Workflow](/image/final_user_diagram.png)
