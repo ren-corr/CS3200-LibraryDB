@@ -42,7 +42,7 @@ CREATE TABLE librarian
   branch INT UNIQUE,
   username VARCHAR(50),
   password VARCHAR(50),
-  FOREIGN KEY (branch) REFERENCES library(library_id)
+  FOREIGN KEY (branch) REFERENCES library(library_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE hold
@@ -51,9 +51,9 @@ CREATE TABLE hold
   book_id INT,
   -- wait_time DATE,
   patron_id INT,
-  FOREIGN KEY (book_id) REFERENCES book(book_id),
-  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
- --  FOREIGN KEY (wait_time) REFERENCES loan(due_date)
+  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE,
+  -- FOREIGN KEY (wait_time) REFERENCES loans(due_date) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE overdueFees
@@ -63,8 +63,8 @@ CREATE TABLE overdueFees
   amt_owed INT,
   patron_id INT,
   PRIMARY KEY (book_id, patron_id),
-  FOREIGN KEY (book_id) REFERENCES book(book_id),
-  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number)
+  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE loans
@@ -74,15 +74,15 @@ CREATE TABLE loans
   book_id INT,
   loan_date DATE,
   due_date DATE,
-  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number),
-  FOREIGN KEY (book_id) REFERENCES book(book_id)
+  FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE numCopies
 (
   copy_id INT PRIMARY KEY AUTO_INCREMENT,
   book_id INT NOT NULL,
-  FOREIGN KEY (book_id) REFERENCES book(book_id)
+  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE author
@@ -91,7 +91,7 @@ CREATE TABLE author
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
   book_id INT NOT NUll,
-  FOREIGN KEY (book_id) REFERENCES book(book_id)
+  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE book_author
@@ -99,20 +99,20 @@ CREATE TABLE book_author
   book_id INT NOT NULL,
   author_id INT NOT NULL,
   PRIMARY KEY (book_id, author_id),
-  FOREIGN KEY (book_id) REFERENCES book(book_id),
-  FOREIGN KEY (author_id) REFERENCES author(author_id) 
+  FOREIGN KEY (book_id) REFERENCES book(book_id) ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (author_id) REFERENCES author(author_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE showCommsLib
 (
-	comm_id INT PRIMARY KEY AUTO_INCREMENT,
+    comm_id INT PRIMARY KEY AUTO_INCREMENT,
     comm_name VARCHAR(50),
     comm_description VARCHAR(100)
 );
 
 CREATE TABLE showCommsPatron
 (
-	comm_id INT PRIMARY KEY AUTO_INCREMENT,
+    comm_id INT PRIMARY KEY AUTO_INCREMENT,
     comm_name VARCHAR(50),
     comm_description VARCHAR(100)
 );
