@@ -276,7 +276,7 @@ class Method:
     # Show commands to the user (librarian)
     def showCommsLib(self):
         print("List of supported commands:\n")
-        self.printTable("SELECT * FROM showCommsLib")
+        self.printTable("SELECT * FROM show_comms_lib")
 
     # Handle command input from the user (librarian)
     def processCommsLib(self):
@@ -300,7 +300,7 @@ class Method:
     # Show commands to the user (patron)
     def showCommsPatron(self):
         print("List of supported commands:\n")
-        self.printTable("SELECT * FROM showCommsPatron")
+        self.printTable("SELECT * FROM show_comms_patron")
 
     # Handle command input from the user (patron)
     def processCommsPatron(self):
