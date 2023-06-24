@@ -1,9 +1,9 @@
 -- create the database
-DROP DATABASE IF EXISTS libraryDB1;
-CREATE DATABASE libraryDB1;
+DROP DATABASE IF EXISTS librarydb;
+CREATE DATABASE librarydb;
 
 -- select the database
-USE libraryDB1;
+USE librarydb;
 
 -- create the tables
 CREATE TABLE book
@@ -53,7 +53,7 @@ CREATE TABLE hold
   FOREIGN KEY (patron_id) REFERENCES patron(library_card_number) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE overdueFees
+CREATE TABLE overdue_fees
 (
   book_id INT,
   days_overdue INT,
@@ -93,14 +93,14 @@ CREATE TABLE book_author
   FOREIGN KEY (author_id) REFERENCES author(author_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
-CREATE TABLE showCommsLib
+CREATE TABLE show_comms_lib
 (
     comm_id INT PRIMARY KEY AUTO_INCREMENT,
     comm_name VARCHAR(50),
     comm_description VARCHAR(100)
 );
 
-CREATE TABLE showCommsPatron
+CREATE TABLE show_comms_patron
 (
     comm_id INT PRIMARY KEY AUTO_INCREMENT,
     comm_name VARCHAR(50),
@@ -493,7 +493,7 @@ VALUES
   (1, 1, 'librarian1', 'password1'),
   (2, 2, 'librarian2', 'password2');
 
-INSERT INTO overdueFees (book_id, days_overdue, amt_owed, patron_id)
+INSERT INTO overdue_fees (book_id, days_overdue, amt_owed, patron_id)
 VALUES
   (2, 10, 1.50, 1),
   (3, 5, 0.75, 2);
@@ -521,7 +521,7 @@ VALUES
   (5, 5),
   (6, 6);
   
-INSERT INTO showCommsLib(comm_name, comm_description)
+INSERT INTO show_comms_lib(comm_name, comm_description)
 VALUES
 ('addBook', 'Add a book to the database.'),
 ('removeBook', 'Remove a book from the database.'),
@@ -529,7 +529,7 @@ VALUES
 ('bookInfo', 'Show the information of a book.'),
 ('Exit', 'Exit page.');
 
-INSERT INTO showCommsPatron(comm_name, comm_description)
+INSERT INTO show_comms_patron(comm_name, comm_description)
 VALUES
 ('booksAvailable', 'Show which books are available.'),
 ('createHold', 'Place a hold on the book.'),
